@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { VoiceAnimation } from "@/components/voice-animation"
 import { TypewriterText } from "@/components/typewriter-text"
+import { BackendStatus } from "@/components/backend-status"
+import { DebugPanel } from "@/components/debug-panel"
 import { useAuthStore, useVoiceStore } from "@/lib/store"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
 import { Play, Pause, Square, MessageSquare, X } from "lucide-react"
@@ -30,9 +32,13 @@ export default function ConversationPage() {
   const currentMessage = messages[messages.length - 1]
   const isUserSpeaking = voiceState.isListening
   const isAISpeaking = voiceState.isProcessing
+  const isAITalking = voiceState.isSpeaking
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-16">
+      {/* Debug Panel - Remove this in production */}
+      <DebugPanel messages={messages} voiceState={voiceState} />
+      
       {/* Desktop Layout */}
       <div className="hidden lg:flex h-screen pt-16">
         {/* Left Panel - Animation */}
@@ -52,23 +58,25 @@ export default function ConversationPage() {
               className="mt-8"
             >
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {isUserSpeaking ? "Listening..." : isAISpeaking ? "Processing..." : "Ready to Chat"}
+                {isUserSpeaking ? "Listening..." : isAISpeaking ? "Processing..." : isAITalking ? "Speaking..." : "Ready to Chat"}
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
                 {isUserSpeaking
                   ? "Speak clearly and naturally"
                   : isAISpeaking
                     ? "Generating response..."
-                    : "Click start to begin conversation"}
+                    : isAITalking
+                      ? "AI is speaking..."
+                      : "Click start to begin conversation"}
               </p>
             </motion.div>
 
-            {/* Control Buttons */}
+            {/* Control Buttons - Centered and Accessible */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="flex justify-center space-x-4 mt-8"
+              className="flex justify-center items-center space-x-4 mt-8"
             >
               {!voiceState.isListening ? (
                 <Button
@@ -109,6 +117,11 @@ export default function ConversationPage() {
                   <MessageSquare className="w-4 h-4 mr-2" />
                   {showFullTranscript ? "Hide History" : "Show History"}
                 </Button>
+              </div>
+
+              {/* Backend Status */}
+              <div className="mb-4">
+                <BackendStatus />
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-4">
@@ -208,14 +221,16 @@ export default function ConversationPage() {
 
             <div className="mt-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {isUserSpeaking ? "Listening..." : isAISpeaking ? "Processing..." : "Ready to Chat"}
+                {isUserSpeaking ? "Listening..." : isAISpeaking ? "Processing..." : isAITalking ? "Speaking..." : "Ready to Chat"}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 {isUserSpeaking
                   ? "Speak clearly and naturally"
                   : isAISpeaking
                     ? "Generating response..."
-                    : "Tap start to begin"}
+                    : isAITalking
+                      ? "AI is speaking..."
+                      : "Tap start to begin"}
               </p>
             </div>
           </div>
@@ -265,38 +280,54 @@ export default function ConversationPage() {
           )}
         </AnimatePresence>
 
-        {/* Control Buttons - Fixed at Bottom */}
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="flex justify-center space-x-4 pb-safe"
-        >
+        {/* Control Buttons - Responsive Bottom Positioning */}
+        <div className="flex justify-center items-center space-x-4 mt-auto pt-6 pb-6 px-4">
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center items-center space-x-4"
+          >
           {!voiceState.isListening ? (
             <Button
-              onClick={startListening}
+              onClick={() => {
+                console.log("Start button clicked"); // Debug log
+                startListening();
+              }}
               disabled={!isSupported}
               size="lg"
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-8"
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800 px-8 py-3 text-white font-semibold rounded-lg shadow-lg touch-manipulation min-h-[48px] min-w-[100px]"
             >
               <Play className="w-5 h-5 mr-2" />
               Start
             </Button>
           ) : (
             <Button
-              onClick={stopListening}
+              onClick={() => {
+                console.log("Stop button clicked"); // Debug log
+                stopListening();
+              }}
               size="lg"
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-8"
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800 px-8 py-3 text-white font-semibold rounded-lg shadow-lg touch-manipulation min-h-[48px] min-w-[100px]"
             >
               <Pause className="w-5 h-5 mr-2" />
               Pause
             </Button>
           )}
 
-          <Button onClick={toggleTranscript} variant="outline" size="lg" className="bg-white dark:bg-gray-800">
+          <Button 
+            onClick={() => {
+              console.log("Transcript toggle button clicked"); // Debug log
+              toggleTranscript();
+            }} 
+            variant="outline" 
+            size="lg" 
+            className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 px-4 py-3 rounded-lg shadow-lg touch-manipulation min-h-[48px] min-w-[48px]"
+          >
             <MessageSquare className="w-5 h-5" />
           </Button>
-        </motion.div>
+          </motion.div>
+        </div>
 
         {/* Full Transcript Modal for Mobile */}
         <AnimatePresence>

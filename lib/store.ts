@@ -17,6 +17,7 @@ interface Message {
 interface VoiceState {
   isListening: boolean
   isProcessing: boolean
+  isSpeaking: boolean
   currentTranscript: string
 }
 
@@ -34,6 +35,7 @@ interface VoiceStore {
   showFullTranscript: boolean
   setListening: (listening: boolean) => void
   setProcessing: (processing: boolean) => void
+  setSpeaking: (speaking: boolean) => void
   setCurrentTranscript: (transcript: string) => void
   addMessage: (message: Omit<Message, "id" | "timestamp">) => void
   toggleTranscript: () => void
@@ -91,6 +93,7 @@ export const useVoiceStore = create<VoiceStore>((set, get) => ({
   voiceState: {
     isListening: false,
     isProcessing: false,
+    isSpeaking: false,
     currentTranscript: "",
   },
   messages: [],
@@ -102,6 +105,10 @@ export const useVoiceStore = create<VoiceStore>((set, get) => ({
   setProcessing: (processing) =>
     set((state) => ({
       voiceState: { ...state.voiceState, isProcessing: processing },
+    })),
+  setSpeaking: (speaking) =>
+    set((state) => ({
+      voiceState: { ...state.voiceState, isSpeaking: speaking },
     })),
   setCurrentTranscript: (transcript) =>
     set((state) => ({
