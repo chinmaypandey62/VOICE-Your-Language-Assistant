@@ -57,18 +57,18 @@ export default function AuthPage() {
     setIsLoading(true)
 
     try {
-      let success = false
+      let result: { success: boolean; error?: string }
 
       if (isLogin) {
-        success = await login(formData.email, formData.password)
+        result = await login(formData.email, formData.password)
       } else {
-        success = await signup(formData.name, formData.email, formData.password)
+        result = await signup(formData.name, formData.email, formData.password)
       }
 
-      if (success) {
+      if (result.success) {
         router.push("/conversation")
       } else {
-        setErrors({ general: "Authentication failed. Please try again." })
+        setErrors({ general: result.error || "Authentication failed. Please try again." })
       }
     } catch (error) {
       setErrors({ general: "An error occurred. Please try again." })

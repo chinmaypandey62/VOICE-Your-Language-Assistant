@@ -1,10 +1,13 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { authApiClient, AuthResponse } from "./auth-client"
 
 interface User {
   id: string
   email: string
   name: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 interface Message {
@@ -24,9 +27,11 @@ interface VoiceState {
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  signup: (name: string, email: string, password: string) => Promise<boolean>
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
+  checkAuth: () => Promise<void>
 }
 
 interface VoiceStore {
@@ -51,39 +56,107 @@ interface ThemeState {
 // Auth Store
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
+      isLoading: false,
+      
       login: async (email: string, password: string) => {
-        // Mock authentication
-        if (email && password) {
-          const user = {
-            id: "1",
-            email,
-            name: email.split("@")[0],
+        set({ isLoading: true })
+        try {
+          const response = await authApiClient.login({ email, password })
+          
+          if (response.success && response.user) {
+            set({ 
+              user: response.user, 
+              isAuthenticated: true,
+              isLoading: false 
+            })
+            return { success: true }
+          } else {
+            set({ isLoading: false })
+            return { 
+              success: false, 
+              error: response.error || 'Login failed' 
+            }
           }
-          set({ user, isAuthenticated: true })
-          return true
+        } catch (error: any) {
+          set({ isLoading: false })
+          return { 
+            success: false, 
+            error: error.message || 'Login failed' 
+          }
         }
-        return false
       },
+      
       signup: async (name: string, email: string, password: string) => {
-        // Mock signup
-        if (name && email && password) {
-          const user = {
-            id: "1",
-            email,
-            name,
+        set({ isLoading: true })
+        try {
+          const response = await authApiClient.register({ name, email, password })
+          
+          if (response.success && response.user) {
+            set({ 
+              user: response.user, 
+              isAuthenticated: true,
+              isLoading: false 
+            })
+            return { success: true }
+          } else {
+            set({ isLoading: false })
+            return { 
+              success: false, 
+              error: response.error || 'Registration failed' 
+            }
           }
-          set({ user, isAuthenticated: true })
-          return true
+        } catch (error: any) {
+          set({ isLoading: false })
+          return { 
+            success: false, 
+            error: error.message || 'Registration failed' 
+          }
         }
-        return false
       },
-      logout: () => set({ user: null, isAuthenticated: false }),
+      
+      logout: () => {
+        authApiClient.logout()
+        set({ user: null, isAuthenticated: false })
+      },
+      
+      checkAuth: async () => {
+        if (authApiClient.isAuthenticated()) {
+          set({ isLoading: true })
+          try {
+            const response = await authApiClient.getCurrentUser()
+            
+            if (response.success && response.user) {
+              set({ 
+                user: response.user, 
+                isAuthenticated: true,
+                isLoading: false 
+              })
+            } else {
+              set({ 
+                user: null, 
+                isAuthenticated: false,
+                isLoading: false 
+              })
+            }
+          } catch (error) {
+            set({ 
+              user: null, 
+              isAuthenticated: false,
+              isLoading: false 
+            })
+          }
+        }
+      }
     }),
     {
       name: "auth-storage",
+      partialize: (state) => ({ 
+        isAuthenticated: state.isAuthenticated,
+        user: state.user 
+      })
     },
   ),
 )

@@ -71,8 +71,7 @@ export function useSpeechRecognition() {
         // Load voices for speech synthesis
         if ('speechSynthesis' in window) {
           const loadVoices = () => {
-            const voices = speechSynthesis.getVoices()
-            console.log("Available voices:", voices.length)
+            speechSynthesis.getVoices()
           }
           
           // Load voices immediately if available
@@ -91,7 +90,7 @@ export function useSpeechRecognition() {
           recognition.lang = "en-US"
 
           recognition.onstart = () => {
-            console.log("Speech recognition started") // Debug log
+            console.log('Speech recognition started')
             setListening(true)
           }
 
@@ -107,8 +106,6 @@ export function useSpeechRecognition() {
                 interimTranscript += transcript
               }
             }
-
-            console.log("Speech recognition result:", { finalTranscript, interimTranscript }) // Debug log
             
             // Update transcript immediately for responsiveness
             if (interimTranscript || finalTranscript) {
@@ -116,7 +113,6 @@ export function useSpeechRecognition() {
             }
 
             if (finalTranscript.trim()) {
-              console.log("Final transcript received:", finalTranscript) // Debug log
               setCurrentTranscript("") // Clear the current transcript
               handleUserInput(finalTranscript.trim())
             }
@@ -124,31 +120,13 @@ export function useSpeechRecognition() {
 
           recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
             console.error("Speech recognition error:", event.error)
-            if (event.error === 'no-speech' || event.error === 'audio-capture') {
-              // Try to restart recognition for these errors
-              setTimeout(() => {
-                if (voiceState.isListening) {
-                  console.log("Restarting speech recognition...")
-                  recognition.start()
-                }
-              }, 100)
-            } else {
-              setListening(false)
-            }
+            setListening(false)
           }
 
           recognition.onend = () => {
-            console.log("Speech recognition ended")
-            // Auto-restart if we're still supposed to be listening
-            if (voiceState.isListening) {
-              setTimeout(() => {
-                console.log("Auto-restarting speech recognition...")
-                recognition.start()
-              }, 100)
-            } else {
-              setListening(false)
-              setCurrentTranscript("")
-            }
+            console.log('Speech recognition ended')
+            setListening(false)
+            setCurrentTranscript("")
           }
         }
       }
@@ -158,8 +136,6 @@ export function useSpeechRecognition() {
   const handleUserInput = async (text: string) => {
     if (!text.trim()) return
 
-    console.log("Processing user input:", text) // Debug log
-
     // Add user message
     addMessage({
       type: "user",
@@ -168,11 +144,9 @@ export function useSpeechRecognition() {
 
     try {
       setProcessing(true)
-      console.log("Sending to backend:", text) // Debug log
       
       // Process conversation with backend
       const response = await apiClient.processConversation(text)
-      console.log("Backend response:", response) // Debug log
       
       // Add AI response
       addMessage({
@@ -196,7 +170,6 @@ export function useSpeechRecognition() {
 
   const playAIResponse = async (text: string) => {
     try {
-      console.log("Generating speech for:", text) // Debug log
       setSpeaking(true) // Set speaking state
       
       // Option 1: Use backend text-to-speech
@@ -208,19 +181,15 @@ export function useSpeechRecognition() {
         audio.onended = () => {
           URL.revokeObjectURL(audioUrl)
           setSpeaking(false)
-          console.log("Backend TTS playback finished")
         }
         
         audio.onerror = () => {
-          console.log("Backend TTS failed, falling back to browser TTS")
           playBrowserTTS(text)
         }
         
         await audio.play()
-        console.log("Backend TTS playing successfully")
         
       } catch (backendError) {
-        console.log("Backend TTS not available, using browser TTS:", backendError)
         playBrowserTTS(text)
       }
       
@@ -255,11 +224,9 @@ export function useSpeechRecognition() {
       }
       
       utterance.onstart = () => {
-        console.log("Browser TTS started")
         setSpeaking(true)
       }
       utterance.onend = () => {
-        console.log("Browser TTS finished")
         setSpeaking(false)
       }
       utterance.onerror = (e) => {
@@ -268,28 +235,28 @@ export function useSpeechRecognition() {
       }
       
       speechSynthesis.speak(utterance)
-      console.log("Browser TTS initiated")
     } else {
-      console.log("Speech synthesis not supported in this browser")
       setSpeaking(false)
     }
   }
 
   const startListening = async () => {
-    if (voiceState.isListening) return
-
-    console.log("Starting to listen...") // Debug log
+    // Prevent multiple starts
+    if (voiceState.isListening) {
+      console.log('Already listening, ignoring start request')
+      return
+    }
 
     try {
       // Try Web Speech API first (for real-time recognition)
       if (recognitionRef.current) {
-        console.log("Using Web Speech API") // Debug log
+        console.log('Starting Web Speech API recognition')
         recognitionRef.current.start()
         return
       }
 
       // Fallback to MediaRecorder for backend transcription
-      console.log("Using MediaRecorder fallback") // Debug log
+      console.log('Starting MediaRecorder fallback')
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
@@ -302,20 +269,15 @@ export function useSpeechRecognition() {
       }
 
       mediaRecorder.onstop = async () => {
-        console.log("MediaRecorder stopped, processing audio...") // Debug log
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
         const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' })
         
         try {
           setProcessing(true)
-          console.log("Sending audio to backend for transcription...") // Debug log
           const transcription = await apiClient.transcribeAudio(audioFile)
-          console.log("Transcription result:", transcription) // Debug log
           
           if (transcription.text.trim()) {
             handleUserInput(transcription.text.trim())
-          } else {
-            console.log("Empty transcription received") // Debug log
           }
         } catch (error) {
           console.error("Error transcribing audio:", error)
@@ -336,6 +298,7 @@ export function useSpeechRecognition() {
       
     } catch (error) {
       console.error("Error starting audio recording:", error)
+      setListening(false)
       addMessage({
         type: "ai",
         content: "Error accessing microphone. Please check your permissions.",
@@ -344,19 +307,26 @@ export function useSpeechRecognition() {
   }
 
   const stopListening = () => {
-    console.log("Stopping listening...") // Debug log
+    console.log('Stopping listening...')
     
     if (recognitionRef.current && voiceState.isListening) {
-      console.log("Stopping Web Speech API") // Debug log
-      recognitionRef.current.stop()
+      try {
+        recognitionRef.current.stop()
+      } catch (error) {
+        console.error('Error stopping recognition:', error)
+      }
     }
     
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      console.log("Stopping MediaRecorder") // Debug log
-      mediaRecorderRef.current.stop()
+      try {
+        mediaRecorderRef.current.stop()
+      } catch (error) {
+        console.error('Error stopping media recorder:', error)
+      }
     }
     
     setListening(false)
+    setCurrentTranscript("")
   }
 
   return {

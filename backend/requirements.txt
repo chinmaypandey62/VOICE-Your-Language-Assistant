@@ -24,7 +24,8 @@ langsmith
 language_data
 language_tool_python
 torch
-pyttsx3
+murf
+requests
 SpeechRecognition
 pyaudio
 whisper

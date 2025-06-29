@@ -7,25 +7,30 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { VoiceAnimation } from "@/components/voice-animation"
 import { TypewriterText } from "@/components/typewriter-text"
-import { BackendStatus } from "@/components/backend-status"
-import { DebugPanel } from "@/components/debug-panel"
 import { useAuthStore, useVoiceStore } from "@/lib/store"
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition"
 import { Play, Pause, Square, MessageSquare, X } from "lucide-react"
 
 export default function ConversationPage() {
   const router = useRouter()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, checkAuth } = useAuthStore()
   const { voiceState, messages, showFullTranscript, toggleTranscript, clearMessages } = useVoiceStore()
   const { isSupported, startListening, stopListening } = useSpeechRecognition()
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Check authentication status on mount (unless bypassed for development)
+    if (process.env.NEXT_PUBLIC_BYPASS_AUTH !== 'true') {
+      checkAuth()
+    }
+  }, [checkAuth])
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_BYPASS_AUTH !== 'true' && !isAuthenticated) {
       router.push("/auth")
     }
   }, [isAuthenticated, router])
 
-  if (!isAuthenticated) {
+  if (process.env.NEXT_PUBLIC_BYPASS_AUTH !== 'true' && !isAuthenticated) {
     return null
   }
 
@@ -36,9 +41,6 @@ export default function ConversationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pt-16">
-      {/* Debug Panel - Remove this in production */}
-      <DebugPanel messages={messages} voiceState={voiceState} />
-      
       {/* Desktop Layout */}
       <div className="hidden lg:flex h-screen pt-16">
         {/* Left Panel - Animation */}
@@ -117,11 +119,6 @@ export default function ConversationPage() {
                   <MessageSquare className="w-4 h-4 mr-2" />
                   {showFullTranscript ? "Hide History" : "Show History"}
                 </Button>
-              </div>
-
-              {/* Backend Status */}
-              <div className="mb-4">
-                <BackendStatus />
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-4">
@@ -290,10 +287,7 @@ export default function ConversationPage() {
           >
           {!voiceState.isListening ? (
             <Button
-              onClick={() => {
-                console.log("Start button clicked"); // Debug log
-                startListening();
-              }}
+              onClick={startListening}
               disabled={!isSupported}
               size="lg"
               className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800 px-8 py-3 text-white font-semibold rounded-lg shadow-lg touch-manipulation min-h-[48px] min-w-[100px]"
@@ -303,10 +297,7 @@ export default function ConversationPage() {
             </Button>
           ) : (
             <Button
-              onClick={() => {
-                console.log("Stop button clicked"); // Debug log
-                stopListening();
-              }}
+              onClick={stopListening}
               size="lg"
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800 px-8 py-3 text-white font-semibold rounded-lg shadow-lg touch-manipulation min-h-[48px] min-w-[100px]"
             >
@@ -316,10 +307,7 @@ export default function ConversationPage() {
           )}
 
           <Button 
-            onClick={() => {
-              console.log("Transcript toggle button clicked"); // Debug log
-              toggleTranscript();
-            }} 
+            onClick={toggleTranscript} 
             variant="outline" 
             size="lg" 
             className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 px-4 py-3 rounded-lg shadow-lg touch-manipulation min-h-[48px] min-w-[48px]"

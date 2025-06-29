@@ -1,4 +1,48 @@
-# Troubleshooting Guide: Speech Recognition Not Working
+# Troubleshooting Guide
+
+## 🚨 App Not Working After Database Migration
+
+The app was working before adding MongoDB authentication. Here's how to debug and fix:
+
+### 🔍 Step 1: Quick Debug
+Visit: http://localhost:3000/debug
+
+This page will test:
+- ✅ Backend connection (Python Flask server)
+- ✅ Database connection (MongoDB)
+- ✅ Authentication system
+- ✅ Environment configuration
+
+### 🔧 Step 2: Start Services
+
+#### Start Backend (Required for voice features)
+```bash
+# Terminal 1: Start Python backend
+cd backend
+python app.py
+```
+
+#### Start Frontend
+```bash
+# Terminal 2: Start Next.js frontend
+npm run dev
+```
+
+### 🚀 Step 3: Bypass Authentication (Development)
+
+If you want to test voice features without authentication:
+
+1. Uncomment this line in `.env`:
+```env
+NEXT_PUBLIC_BYPASS_AUTH=true
+```
+
+2. Restart the development server
+3. Go to http://localhost:3000/conversation directly
+
+---
+
+# Original Troubleshooting Guide: Speech Recognition
 
 ## Common Issues and Solutions
 
