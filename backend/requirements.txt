@@ -13,7 +13,6 @@ langsmith
 whisper
 openai-whisper
 pyaudio
-wave
 murf
 requests
 language_tool_python
