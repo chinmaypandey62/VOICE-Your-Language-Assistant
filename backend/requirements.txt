@@ -12,7 +12,7 @@ langserve
 langsmith
 whisper
 openai-whisper
-pyaudio
+pyaudio==0.2.14
 murf
 requests
 language_tool_python
