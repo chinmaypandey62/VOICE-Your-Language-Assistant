@@ -16,9 +16,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
+frontend = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])  # Allow Next.js frontend
+CORS(app, origins=[frontend])  # Allow Next.js frontend
 
 # Initialize models
 groq_llm = ChatGroq(model="llama3-70b-8192",
