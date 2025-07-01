@@ -4,7 +4,6 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 import tempfile
-import base64
 from grammar_checker import grammarCheckTool
 from langchain_core.prompts import ChatPromptTemplate
 from textToSpeech import generate_speech_file
