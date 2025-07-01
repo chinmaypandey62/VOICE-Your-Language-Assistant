@@ -6,7 +6,7 @@ import time
 from murf import Murf
 
 # Initialize Murf client
-MURF_API_KEY = "ap2_8252ed0b-1d4f-4430-bd7d-3162e9fb076a"
+MURF_API_KEY = os.getenv("MURF_API_KEY")
 client = Murf(api_key=MURF_API_KEY)
 
 # Store temp files for cleanup
