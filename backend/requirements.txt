@@ -9,7 +9,6 @@ langchain-groq
 langchain-text-splitters
 langchain-experimental
 langchainhub
-whisper
 openai-whisper
 murf
 requests
