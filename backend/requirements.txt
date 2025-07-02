@@ -9,14 +9,10 @@ langchain-groq
 langchain-text-splitters
 langchain-experimental
 langchainhub
-langserve
-langsmith
 whisper
 openai-whisper
-# pyaudio==0.2.14  # Removed - not needed for web deployment
 murf
 requests
 language_tool_python
-langcodes
 language_data
 gradio
