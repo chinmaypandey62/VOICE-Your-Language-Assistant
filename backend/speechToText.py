@@ -1,5 +1,5 @@
 import whisper
-import pyaudio
+# import pyaudio  # Removed for cloud deployment
 import wave
 import tempfile
 
@@ -16,33 +16,10 @@ def transcribe_audio_file(model, audio_file_path):
         print(f"Error transcribing audio: {e}")
         return ""
 
-def record_and_transcribe(model):
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 16000
-    RECORD_SECONDS = 5
-
-    p = pyaudio.PyAudio()
-
-    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK, ) # input_device_index=2,
-
-    print("Listening...")
-    frames = [stream.read(CHUNK) for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS))]
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        wf = wave.open(tmp.name, 'wb')
-        wf.setnchannels(CHANNELS)
-        wf.setsampwidth(p.get_sample_size(FORMAT))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
-        wf.close()
-
-        print("Transcribing...")
-        result = model.transcribe(tmp.name, language="en", fp16=False)
-        print("You said:", result["text"])
-        return result["text"]
+# Note: record_and_transcribe function removed for cloud deployment
+# The app uses browser-based recording instead of server-side recording
+# 
+# def record_and_transcribe(model):
+#     """This function requires PyAudio which doesn't work in cloud environments"""
+#     # Implementation removed for cloud compatibility
+#     pass
