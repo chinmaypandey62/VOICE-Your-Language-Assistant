@@ -56,7 +56,7 @@ VOICE leverages a sophisticated tech stack to deliver a seamless conversational 
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-username/VOICE-Your-Language-Assistant.git
+git clone https://github.com/chinmaypandey62/VOICE-Your-Language-Assistant.git
 cd VOICE-Your-Language-Assistant
 ```
 
