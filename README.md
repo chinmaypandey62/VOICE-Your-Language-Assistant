@@ -11,7 +11,7 @@
 
 ### 🌟 Key Features
 
-- **Full-Duplex Conversation**: Seamless, fluid conversations without delays or rigid turn-taking
+- **Half-Duplex Conversation**: Seamless, fluid conversations without much delays or rigid turn-taking
 - **Real-Time Grammar Detection**: Instant identification and correction of grammatical errors
 - **Natural Voice Feedback**: Human-like responses through advanced text-to-speech technology
 - **Adaptive Learning**: AI that adapts to casual, spoken, and even grammatically incorrect inputs
