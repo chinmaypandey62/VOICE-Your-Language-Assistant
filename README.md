@@ -3,7 +3,7 @@
 [![Development Status](https://img.shields.io/badge/Status-Under%20Development-yellow?style=for-the-badge)](https://github.com/your-username/VOICE-Your-Language-Assistant)
 [![Built with Next.js](https://img.shields.io/badge/Frontend-Next.js-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![Backend](https://img.shields.io/badge/Backend-Python%20Flask-blue?style=for-the-badge&logo=python)](https://flask.palletsprojects.com/)
-[![AI Framework](https://img.shields.io/badge/AI-LangGraph-green?style=for-the-badge)](https://langchain-ai.github.io/langgraph/)
+[![AI Framework](https://img.shields.io/badge/AI-LangChain-green?style=for-the-badge)](https://langchain-ai.github.io/langchain/)
 
 ## 🎯 Project Overview
 
